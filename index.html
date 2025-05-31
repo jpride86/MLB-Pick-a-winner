@@ -43,7 +43,10 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+import {
+  getFirestore, collection, addDoc, serverTimestamp,
+  doc, getDoc, setDoc, updateDoc, increment
+} from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
     // Your web app's Firebase configuration
   const firebaseConfig = {
@@ -88,6 +91,17 @@ loadGames();
     loadGames();
   } catch (error) {
     alert("Login error: " + error.message);
+  }
+};
+window.logout = async () => {
+  try {
+    await auth.signOut();
+    document.getElementById("user-info").innerText = "";
+    document.getElementById("auth-fields").classList.remove("hidden");
+    document.getElementById("logout-button").classList.add("hidden");
+    document.getElementById("games-section").classList.add("hidden");
+  } catch (error) {
+    alert("Logout error: " + error.message);
   }
 };
 
