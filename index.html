@@ -39,14 +39,15 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyC45hybC5oU5y5B9NL3Zx4fcnSP8-zvw6M",
-      authDomain: "mlb-pick-a-winner.firebaseapp.com",
-      projectId: "mlb-pick-a-winner",
-      storageBucket: "mlb-pick-a-winner.firebasestorage.app",
-      messagingSenderId: "158172795032",
-      appId: "1:158172795032:web:398658149add056bd600ed"
-    };
+    // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyC45hybC5oU5y5B9NL3Zx4fcnSP8-zvw6M",
+    authDomain: "mlb-pick-a-winner.firebaseapp.com",
+    projectId: "mlb-pick-a-winner",
+    storageBucket: "mlb-pick-a-winner.firebasestorage.app",
+    messagingSenderId: "158172795032",
+    appId: "1:158172795032:web:398658149add056bd600ed"
+  };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
