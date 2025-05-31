@@ -11,20 +11,26 @@
 
 <h1 class="text-3xl sm:text-4xl font-bold text-center mb-6 text-blue-600 break-words">MLB Pick the Winner</h1>
 
-    <div id="auth-section" class="mb-6">
-      <div class="flex flex-col gap-3">
-        <input id="email" type="email" placeholder="Email"
-          class="p-2 border border-gray-300 rounded w-full" />
-        <input id="password" type="password" placeholder="Password"
-          class="p-2 border border-gray-300 rounded w-full" />
-        <div class="flex flex-col sm:flex-row gap-4">
-
-          <button onclick="register()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Register</button>
-          <button onclick="login()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Login</button>
-        </div>
-        <div id="user-info" class="mt-2 text-sm text-gray-600"></div>
-      </div>
+   <div id="auth-section" class="mb-6">
+  <div id="auth-fields" class="flex flex-col gap-3">
+    <input id="email" type="email" placeholder="Email"
+      class="p-2 border border-gray-300 rounded w-full" />
+    <input id="password" type="password" placeholder="Password"
+      class="p-2 border border-gray-300 rounded w-full" />
+    <div class="flex flex-col sm:flex-row gap-4">
+      <button onclick="register()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Register</button>
+      <button onclick="login()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Login</button>
     </div>
+  </div>
+
+  <!-- 🔻 INSERT HERE -->
+  <div id="user-info" class="mt-2 text-sm text-gray-600"></div>
+
+  <button onclick="logout()" id="logout-button" class="hidden bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded mt-2">
+    Log Out
+  </button>
+</div>
+
 
     <div id="games-section" class="hidden">
       <h2 class="text-xl font-semibold mb-4 text-center text-indigo-600">Today's Games</h2>
@@ -59,8 +65,12 @@
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     document.getElementById("user-info").innerText = `Registered and logged in as ${userCredential.user.email}`;
-    document.getElementById("games-section").classList.remove("hidden");
-    loadGames();
+   document.getElementById("games-section").classList.remove("hidden");
+document.getElementById("auth-fields").classList.add("hidden");
+document.getElementById("logout-button").classList.remove("hidden");
+loadGames();
+
+
   } catch (error) {
     alert("Registration error: " + error.message);
   }
@@ -73,6 +83,8 @@
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     document.getElementById("user-info").innerText = `Logged in as ${userCredential.user.email}`;
     document.getElementById("games-section").classList.remove("hidden");
+    document.getElementById("auth-fields").classList.add("hidden"); // ✅ hide login fields
+    document.getElementById("logout-button").classList.remove("hidden"); // ✅ show logout
     loadGames();
   } catch (error) {
     alert("Login error: " + error.message);
