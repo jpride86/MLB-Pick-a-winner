@@ -128,9 +128,7 @@ document.getElementById("logout-button").classList.add("hidden");
   games = data.events.map((event, index) => ({
   id: index + 1,
   home: event.strHomeTeam,
-  away: event.strAwayTeam,
-  homeLogo: "", // Placeholder if badge is unavailable
-  awayLogo: ""
+  away: event.strAwayTeam
 }));
 
 
@@ -140,12 +138,11 @@ document.getElementById("logout-button").classList.add("hidden");
     gamesList.innerHTML += `
   <div class="border border-gray-300 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
     <div class="text-lg font-medium mb-2 sm:mb-0 flex items-center gap-2">
-      <img src="${game.awayLogo}" alt="${game.away}" class="w-6 h-6 rounded-full" />
-      ${game.away}
-      <span class="text-gray-500 mx-1">@</span>
-      ${game.home}
-      <img src="${game.homeLogo}" alt="${game.home}" class="w-6 h-6 rounded-full ml-2" />
-    </div>
+  ${game.away}
+  <span class="text-gray-500 mx-1">@</span>
+  ${game.home}
+</div>
+
     <select id="pick-${game.id}" class="border border-gray-300 rounded p-2 w-full sm:w-auto">
       <option value="">Pick winner</option>
       <option value="${game.away}">${game.away}</option>
