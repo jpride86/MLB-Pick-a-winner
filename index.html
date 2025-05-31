@@ -4,58 +4,137 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MLB Pick the Winner</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h1>MLB Pick the Winner</h1>
+<body class="bg-gray-100 text-gray-800 font-sans p-6">
+  <div class="w-full max-w-2xl mx-auto bg-white shadow-lg rounded-xl p-4 sm:p-6">
 
-  <div id="auth-section">
-    <input id="email" type="email" placeholder="Email" />
-    <input id="password" type="password" placeholder="Password" />
-    <button onclick="register()">Register</button>
-    <button onclick="login()">Login</button>
-    <div id="user-info" style="margin-top: 10px;"></div>
+<h1 class="text-3xl sm:text-4xl font-bold text-center mb-6 text-blue-600 break-words">MLB Pick the Winner</h1>
+
+    <div id="auth-section" class="mb-6">
+      <div class="flex flex-col gap-3">
+        <input id="email" type="email" placeholder="Email"
+          class="p-2 border border-gray-300 rounded w-full" />
+        <input id="password" type="password" placeholder="Password"
+          class="p-2 border border-gray-300 rounded w-full" />
+        <div class="flex flex-col sm:flex-row gap-4">
+
+          <button onclick="register()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Register</button>
+          <button onclick="login()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Login</button>
+        </div>
+        <div id="user-info" class="mt-2 text-sm text-gray-600"></div>
+      </div>
+    </div>
+
+    <div id="games-section" class="hidden">
+      <h2 class="text-xl font-semibold mb-4 text-center text-indigo-600">Today's Games</h2>
+      <div id="games-list" class="space-y-4"></div>
+      <button onclick="submitPicks()" class="mt-4 w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded">Submit Picks</button>
+    </div>
   </div>
 
-  <div id="games-section" style="display:none;">
-    <h2>Today's Games</h2>
-    <div id="games-list">Loading games...</div>
-    <button onclick="submitPicks()">Submit Picks</button>
-  </div>
+  <!-- ✅ Modular Firebase SDK (modern) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
-  <script>
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
+      apiKey: "AIzaSyC45hybC5oU5y5B9NL3Zx4fcnSP8-zvw6M",
+      authDomain: "mlb-pick-a-winner.firebaseapp.com",
+      projectId: "mlb-pick-a-winner",
+      storageBucket: "mlb-pick-a-winner.firebasestorage.app",
+      messagingSenderId: "158172795032",
+      appId: "1:158172795032:web:398658149add056bd600ed"
     };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
 
-    function register() {
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.register = async () => {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(() => alert("Registered successfully"))
-        .catch(err => alert(err.message));
-    }
+      try {
 
-    function login() {
+  // Simulated correct answers (replace later with live data or manual result entry)
+  // Fetch real MLB results
+const response = await fetch("https://www.thesportsdb.com/api/v1/json/1/eventspastleague.php?id=4424");
+const data = await response.json();
+
+const results = {}; // key = "Away@Home", value = winning team
+data.events.forEach(game => {
+  if (game.intHomeScore != null && game.intAwayScore != null) {
+    const winner =
+      parseInt(game.intHomeScore) > parseInt(game.intAwayScore)
+        ? game.strHomeTeam
+        : game.strAwayTeam;
+
+    const key = `${game.strAwayTeam}@${game.strHomeTeam}`;
+    results[key] = winner;
+  }
+});
+
+
+  let correctCount = 0;
+  if (picks.picks[1] === correctAnswers[1]) correctCount++;
+  if (picks.picks[2] === correctAnswers[2]) correctCount++;
+
+  // Leaderboard logic
+  import {
+    doc, getDoc, setDoc, updateDoc, increment
+  } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
+  const leaderboardRef = doc(db, "leaderboard", user.uid);
+  const leaderboardSnap = await getDoc(leaderboardRef);
+
+  if (leaderboardSnap.exists()) {
+    await updateDoc(leaderboardRef, {
+      correctPicks: increment(correctCount),
+      totalPicks: increment(2),
+      points: increment(correctCount)
+    });
+  } else {
+    await setDoc(leaderboardRef, {
+      email: user.email,
+      correctPicks: correctCount,
+      totalPicks: 2,
+      points: correctCount
+    });
+  }
+
+  alert(`Picks submitted! You got ${correctCount} correct.`);
+  loadLeaderboard();
+
+} catch (err) {
+  alert("Error saving picks: " + err.message);
+}
+
+    };
+
+    window.login = async () => {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
-      auth.signInWithEmailAndPassword(email, password)
-        .then(user => {
-          document.getElementById("user-info").innerText = `Logged in as ${user.user.email}`;
-          document.getElementById("games-section").style.display = 'block';
-          loadGames();
-        })
-        .catch(err => alert(err.message));
-    }
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        document.getElementById("user-info").innerText = `Logged in as ${userCredential.user.email}`;
+        document.getElementById("games-section").classList.remove("hidden");
 
-    function loadGames() {
+        loadGames();
+      } catch (error) {
+        alert(error.message);
+      }
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("user-info").innerText = `Logged in as ${user.email}`;
+        document.getElementById("games-section").classList.remove("hidden");
+        loadGames();
+      }
+    });
+
+    window.loadGames = () => {
       const games = [
         { id: 1, home: "Yankees", away: "Red Sox" },
         { id: 2, home: "Dodgers", away: "Giants" }
@@ -64,32 +143,95 @@
       gamesList.innerHTML = "";
       games.forEach(game => {
         gamesList.innerHTML += `
-          <div>
-            ${game.away} @ ${game.home}
-            <select id="pick-${game.id}">
-              <option value="">Pick winner</option>
-              <option value="${game.away}">${game.away}</option>
-              <option value="${game.home}">${game.home}</option>
-            </select>
-          </div>`;
+  <div class="border border-gray-300 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div class="text-lg font-medium mb-2 sm:mb-0">
+      ${game.away} <span class="text-gray-500">@</span> ${game.home}
+    </div>
+    <select id="pick-${game.id}" class="border border-gray-300 rounded p-2 w-full sm:w-auto">
+      <option value="">Pick winner</option>
+      <option value="${game.away}">${game.away}</option>
+      <option value="${game.home}">${game.home}</option>
+    </select>
+  </div>`;
+
+      });
+    };
+
+    window.submitPicks = async () => {
+  const user = auth.currentUser;
+  if (!user) return alert("Not logged in");
+
+  const picks = {
+    userId: user.uid,
+    email: user.email,
+    picks: {
+      1: document.getElementById("pick-1").value,
+      2: document.getElementById("pick-2").value
+    },
+    timestamp: serverTimestamp()
+  };
+
+  try {
+    // 1. Save picks to Firestore
+    await addDoc(collection(db, "picks"), picks);
+
+    // 2. Fetch real MLB results
+    const response = await fetch("https://www.thesportsdb.com/api/v1/json/1/eventspastleague.php?id=4424");
+    const data = await response.json();
+
+    const results = {}; // key = "Away@Home", value = winning team
+    data.events.forEach(game => {
+      if (game.intHomeScore != null && game.intAwayScore != null) {
+        const winner =
+          parseInt(game.intHomeScore) > parseInt(game.intAwayScore)
+            ? game.strHomeTeam
+            : game.strAwayTeam;
+        const key = `${game.strAwayTeam}@${game.strHomeTeam}`;
+        results[key] = winner;
+      }
+    });
+
+    // 3. Check how many picks were correct
+    let correctCount = 0;
+    Object.keys(picks.picks).forEach(key => {
+      const game = games.find(g => g.id == key); // assumes global `games` array
+      if (!game) return;
+
+      const matchup = `${game.away}@${game.home}`;
+      if (results[matchup] && picks.picks[key] === results[matchup]) {
+        correctCount++;
+      }
+    });
+
+    // 4. Update leaderboard
+    const leaderboardRef = doc(db, "leaderboard", user.uid);
+    const leaderboardSnap = await getDoc(leaderboardRef);
+
+    if (leaderboardSnap.exists()) {
+      await updateDoc(leaderboardRef, {
+        correctPicks: increment(correctCount),
+        totalPicks: increment(2),
+        points: increment(correctCount)
+      });
+    } else {
+      await setDoc(leaderboardRef, {
+        email: user.email,
+        correctPicks: correctCount,
+        totalPicks: 2,
+        points: correctCount
       });
     }
 
-    function submitPicks() {
-      const user = auth.currentUser;
-      if (!user) return alert("Not logged in");
+    // 5. Notify user and show leaderboard
+    alert(`Picks submitted! You got ${correctCount} correct.`);
+    loadLeaderboard();
 
-      const picks = {
-        userId: user.uid,
-        email: user.email,
-        picks: {
-          1: document.getElementById("pick-1").value,
-          2: document.getElementById("pick-2").value
-        },
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      db.collection("picks").add(picks).then(() => alert("Picks saved"));
-    }
+  } catch (err) {
+    alert("Error saving picks or updating leaderboard: " + err.message);
+  }
+};
+
   </script>
+  
 </body>
 </html>
