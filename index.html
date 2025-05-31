@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MLB Pick the Winner</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <h1>MLB Pick the Winner</h1>
+
+  <div id="auth-section">
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <button onclick="register()">Register</button>
+    <button onclick="login()">Login</button>
+    <div id="user-info" style="margin-top: 10px;"></div>
+  </div>
+
+  <div id="games-section" style="display:none;">
+    <h2>Today's Games</h2>
+    <div id="games-list">Loading games...</div>
+    <button onclick="submitPicks()">Submit Picks</button>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    function register() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => alert("Registered successfully"))
+        .catch(err => alert(err.message));
+    }
+
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then(user => {
+          document.getElementById("user-info").innerText = `Logged in as ${user.user.email}`;
+          document.getElementById("games-section").style.display = 'block';
+          loadGames();
+        })
+        .catch(err => alert(err.message));
+    }
+
+    function loadGames() {
+      const games = [
+        { id: 1, home: "Yankees", away: "Red Sox" },
+        { id: 2, home: "Dodgers", away: "Giants" }
+      ];
+      const gamesList = document.getElementById("games-list");
+      gamesList.innerHTML = "";
+      games.forEach(game => {
+        gamesList.innerHTML += `
+          <div>
+            ${game.away} @ ${game.home}
+            <select id="pick-${game.id}">
+              <option value="">Pick winner</option>
+              <option value="${game.away}">${game.away}</option>
+              <option value="${game.home}">${game.home}</option>
+            </select>
+          </div>`;
+      });
+    }
+
+    function submitPicks() {
+      const user = auth.currentUser;
+      if (!user) return alert("Not logged in");
+
+      const picks = {
+        userId: user.uid,
+        email: user.email,
+        picks: {
+          1: document.getElementById("pick-1").value,
+          2: document.getElementById("pick-2").value
+        },
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      db.collection("picks").add(picks).then(() => alert("Picks saved"));
+    }
+  </script>
+</body>
+</html>
