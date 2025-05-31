@@ -114,14 +114,16 @@ window.logout = async () => {
       }
     });
 
-    window.loadGames = async () => {
+   window.loadGames = async () => {
   const today = new Date().toISOString().split("T")[0];
-const url = `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${today}&s=MLB`;
+  const url = `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${today}&s=MLB`;
 
   try {
     const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);
+    }
     const data = await res.json();
-
     if (!data.events) {
       document.getElementById("games-list").innerHTML = "<p>No games found for today.</p>";
       return;
@@ -165,9 +167,10 @@ const url = `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${today
     });
   } catch (error) {
     console.error("Failed to load games:", error);
-    document.getElementById("games-list").innerHTML = "<p>Error loading games.</p>";
+    document.getElementById("games-list").innerHTML = `<p>Error loading games: ${error.message}</p>`;
   }
 };
+
 
     window.submitPicks = async () => {
   const user = auth.currentUser;
