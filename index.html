@@ -114,28 +114,49 @@ window.logout = async () => {
       }
     });
 
-    window.loadGames = () => {
-      const games = [
-        { id: 1, home: "Yankees", away: "Red Sox" },
-        { id: 2, home: "Dodgers", away: "Giants" }
-      ];
-      const gamesList = document.getElementById("games-list");
-      gamesList.innerHTML = "";
-      games.forEach(game => {
-        gamesList.innerHTML += `
-  <div class="border border-gray-300 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-    <div class="text-lg font-medium mb-2 sm:mb-0">
-      ${game.away} <span class="text-gray-500">@</span> ${game.home}
-    </div>
-    <select id="pick-${game.id}" class="border border-gray-300 rounded p-2 w-full sm:w-auto">
-      <option value="">Pick winner</option>
-      <option value="${game.away}">${game.away}</option>
-      <option value="${game.home}">${game.home}</option>
-    </select>
-  </div>`;
+    window.loadGames = async () => {
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const url = `https://www.thesportsdb.com/api/v1/json/1/eventsday.php?d=${today}&s=MLB`;
 
-      });
-    };
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.events) {
+      document.getElementById("games-list").innerHTML = "<p>No games found for today.</p>";
+      return;
+    }
+
+    const games = data.events
+      .filter(e => e.strHomeTeam && e.strAwayTeam)
+      .map((e, idx) => ({
+        id: idx + 1,
+        home: e.strHomeTeam,
+        away: e.strAwayTeam
+      }));
+
+    window.games = games; // Save globally
+
+    const gamesList = document.getElementById("games-list");
+    gamesList.innerHTML = "";
+    games.forEach(game => {
+      gamesList.innerHTML += `
+        <div class="border border-gray-300 rounded p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div class="text-lg font-medium mb-2 sm:mb-0">
+            ${game.away} <span class="text-gray-500">@</span> ${game.home}
+          </div>
+          <select id="pick-${game.id}" class="border border-gray-300 rounded p-2 w-full sm:w-auto">
+            <option value="">Pick winner</option>
+            <option value="${game.away}">${game.away}</option>
+            <option value="${game.home}">${game.home}</option>
+          </select>
+        </div>`;
+    });
+  } catch (error) {
+    console.error("Failed to load games:", error);
+    document.getElementById("games-list").innerHTML = "<p>Error loading games.</p>";
+  }
+};
 
     window.submitPicks = async () => {
   const user = auth.currentUser;
